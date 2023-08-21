@@ -19,12 +19,19 @@ import cache_save_utils
 
 
 DSET_KWARGS = {
+    "sonar": {"dataset_name": "sonar", "data_source": "pmlb"},
     "heart": {"dataset_name": "heart", "data_source": "imodels"},
+    "diabetes": {"dataset_name": "diabetes", "data_source": "pmlb"},
     "breast_cancer": {"dataset_name": "breast_cancer", "data_source": "sklearn"},
-    "credit-g": {"dataset_name": "credit_g", "data_source": "imodels"},
+    "credit_g": {"dataset_name": "credit_g", "data_source": "imodels"},
     "juvenile": {"dataset_name": "juvenile_clean", "data_source": "imodels"},
     "compas": {"dataset_name": "compas_two_year_clean", "data_source": "imodels"},
-    # 'adult': {'dataset_name': '1182', 'data_source': 'openml'},
+    "adult": {"dataset_name": "1182", "data_source": "openml"},
+    "bike_sharing": {"dataset_name": "42712", "data_source": "openml"},
+    "readmission": {
+        "dataset_name": "readmission_clean",
+        "data_source": "imodels",
+    },  # big
 }
 
 
@@ -54,6 +61,12 @@ def add_main_args(parser):
         help="number of cyclical boosting rounds",
     )
     parser.add_argument(
+        "--reg_param",
+        type=float,
+        default=0.0,
+        help="regularization parameter for cyclical boosting",
+    )
+    parser.add_argument(
         "--n_boosting_rounds_marginal",
         type=int,
         default=0,
@@ -61,11 +74,18 @@ def add_main_args(parser):
     )
     parser.add_argument(
         "--fit_linear_marginal",
-        type=int,
-        default=0,
-        choices=[0, 1],
+        type=str,
+        default="None",
+        choices=[None, "None", "ridge", "nnls"],
         help="whether to fit linear marginal",
     )
+    parser.add_argument(
+        "--reg_param_marginal",
+        type=float,
+        default=0.0,
+        help="regularization parameter for marginal boosting",
+    )
+
     return parser
 
 
@@ -127,9 +147,11 @@ if __name__ == "__main__":
 
     m = TreeGAMClassifier(
         n_boosting_rounds=args.n_boosting_rounds,
+        reg_param=args.reg_param,
         n_boosting_rounds_marginal=args.n_boosting_rounds_marginal,
-        random_state=args.seed,
+        reg_param_marginal=args.reg_param_marginal,
         fit_linear_marginal=args.fit_linear_marginal,
+        random_state=args.seed,
     )
     m.fit(X_train, y_train)
     r["roc_auc_train"] = metrics.roc_auc_score(y_train, m.predict_proba(X_train)[:, 1])

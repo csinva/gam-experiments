@@ -9,13 +9,25 @@ repo_dir = dirname(dirname(os.path.abspath(__file__)))
 
 # List of values to sweep over (sweeps over all combinations of these)
 params_shared_dict = {
-    "dataset_name": ["heart", "breast_cancer", "credit-g", "juvenile", "compas"],
+    "dataset_name": [
+        "sonar",
+        "heart",
+        "diabetes",
+        "breast_cancer",
+        "credit_g",
+        "juvenile",
+        "compas",
+        "adult",
+        "bike_sharing",
+    ],  # "readmission", # add support2? # add mimic? # add CDI?
     "seed": [1, 2, 3],
     "save_dir": [join(repo_dir, "results")],
     "use_cache": [1],
     "n_boosting_rounds": [0, 5, 25, 125],
     "n_boosting_rounds_marginal": [0, 5, 25, 125],
-    "fit_linear_marginal": [0, 1],
+    "fit_linear_marginal": ["None"], # , "nnls", "ridge"],
+    "reg_param": [0.0, 100.0, 1e4],
+    "reg_param_marginal": [0.0, 100, 1e4],
 }
 params_coupled_dict = {}
 
