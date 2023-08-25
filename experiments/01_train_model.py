@@ -10,6 +10,7 @@ from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 import os.path
 from imodels.util.extract import extract_marginal_curves
+from sklearn.ensemble import BaggingClassifier
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import joblib
@@ -28,11 +29,11 @@ DSET_KWARGS = {
     "juvenile": {"dataset_name": "juvenile_clean", "data_source": "imodels"},
     "compas": {"dataset_name": "compas_two_year_clean", "data_source": "imodels"},
     "bike_sharing": {"dataset_name": "42712", "data_source": "openml"},
-    # "readmission": {
-    #     "dataset_name": "readmission_clean",
-    #     "data_source": "imodels",
-    # },  # big, 100k points
-    # "adult": {"dataset_name": "1182", "data_source": "openml"}, # big, 1e6 points
+    "readmission": {
+        "dataset_name": "readmission_clean",
+        "data_source": "imodels",
+    },  # big, 100k points
+    "adult": {"dataset_name": "1182", "data_source": "openml"},  # big, 1e6 points
 }
 
 
@@ -92,6 +93,19 @@ def add_main_args(parser):
         default="cyclic",
         choices=["cyclic", "greedy"],
         help="strategy for boosting",
+    )
+    parser.add_argument(
+        "--bagging_ensemble",
+        type=str,
+        default="None",
+        choices=["None", "samples", "features", "both"],
+        help="whether to use bagging ensemble of GAMs",
+    )
+    parser.add_argument(
+        "--bagging_n_estimators",
+        type=int,
+        default=30,
+        help="Number of GAMs to use in bagging ensemble",
     )
 
     return parser
@@ -153,7 +167,7 @@ if __name__ == "__main__":
         stratify=y,  # don't shuffle this for now, to make sure gam curves have same points
     )
 
-    m = TreeGAMClassifier(
+    clf = TreeGAMClassifier(
         n_boosting_rounds=args.n_boosting_rounds,
         reg_param=args.reg_param,
         n_boosting_rounds_marginal=args.n_boosting_rounds_marginal,
@@ -162,10 +176,23 @@ if __name__ == "__main__":
         boosting_strategy=args.boosting_strategy,
         random_state=args.seed,
     )
-    m.fit(X_train, y_train)
+    if args.bagging_ensemble != "None":
+        m = BaggingClassifier(
+            estimator=clf,
+            n_estimators=args.bagging_n_estimators,
+            random_state=args.seed,
+            bootstrap=args.bagging_ensemble in ["samples", "both"],
+            bootstrap_features=args.bagging_ensemble in ["features", "both"],
+        )
+        m.fit(X_train, y_train)
+        # r["val_score"] = m.oob_score_
+    else:
+        m = clf
+        m.fit(X_train, y_train)
+        r["val_score"] = -m.mse_val_
+
     r["roc_auc_train"] = metrics.roc_auc_score(y_train, m.predict_proba(X_train)[:, 1])
     r["acc_train"] = metrics.accuracy_score(y_train, m.predict(X_train))
-    r["mse_val"] = m.mse_val_
     r["roc_auc_test"] = metrics.roc_auc_score(y_test, m.predict_proba(X_test)[:, 1])
     r["acc_test"] = metrics.accuracy_score(y_test, m.predict(X_test))
 

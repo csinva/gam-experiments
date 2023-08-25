@@ -22,15 +22,15 @@ params_shared_dict = {
         # "adult"
     ],  # add support2? # add mimic? # add CDI?
     "seed": [1, 2, 3],
-    "save_dir": [join(repo_dir, "results", 'main')],
+    "save_dir": [join(repo_dir, "results", "ensemble")],
     "use_cache": [1],
-    "n_boosting_rounds": [0, 5, 25, 125],
-    "n_boosting_rounds_marginal": [0, 5, 25, 125],
-    "fit_linear_marginal": ["None"],  # , "nnls", "ridge"],
-    "reg_param": [0.0, 100.0, 1e4],
-    "reg_param_marginal": [0.0, 100, 1e4],
-    "boosting_strategy": ["cyclic", "greedy"],
-    'use_bagging_ensemble': [0, 1],
+    "n_boosting_rounds": [0, 5, 25, 125, 625, 3125],
+    # "n_boosting_rounds_marginal": [0, 5, 25, 125],
+    # "fit_linear_marginal": ["None"],  # , "nnls", "ridge"],
+    # "reg_param": [0.0, 100.0, 1e4],
+    # "reg_param_marginal": [0.0, 100, 1e4],
+    # "boosting_strategy": ["cyclic", "greedy"],
+    "bagging_ensemble": ['None', 'samples', 'features', 'both'],
 }
 params_coupled_dict = {}
 
