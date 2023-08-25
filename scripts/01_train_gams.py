@@ -28,6 +28,7 @@ params_shared_dict = {
     "fit_linear_marginal": ["None"], # , "nnls", "ridge"],
     "reg_param": [0.0, 100.0, 1e4],
     "reg_param_marginal": [0.0, 100, 1e4],
+    "boosting_strategy": ["cyclic", "greedy"],
 }
 params_coupled_dict = {}
 

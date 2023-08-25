@@ -9,6 +9,7 @@ from sklearn import metrics
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import train_test_split
 import os.path
+from imodels.util.extract import extract_marginal_curves
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import joblib
@@ -85,6 +86,13 @@ def add_main_args(parser):
         default=0.0,
         help="regularization parameter for marginal boosting",
     )
+    parser.add_argument(
+        "--boosting_strategy",
+        type=str,
+        default="cyclic",
+        choices=["cyclic", "greedy"],
+        help="strategy for boosting",
+    )
 
     return parser
 
@@ -151,16 +159,18 @@ if __name__ == "__main__":
         n_boosting_rounds_marginal=args.n_boosting_rounds_marginal,
         reg_param_marginal=args.reg_param_marginal,
         fit_linear_marginal=args.fit_linear_marginal,
+        boosting_strategy=args.boosting_strategy,
         random_state=args.seed,
     )
     m.fit(X_train, y_train)
     r["roc_auc_train"] = metrics.roc_auc_score(y_train, m.predict_proba(X_train)[:, 1])
     r["acc_train"] = metrics.accuracy_score(y_train, m.predict(X_train))
+    r["mse_val"] = m.mse_val_
     r["roc_auc_test"] = metrics.roc_auc_score(y_test, m.predict_proba(X_test)[:, 1])
     r["acc_test"] = metrics.accuracy_score(y_test, m.predict(X_test))
 
-    feature_vals_list, shape_function_vals_list = m.get_shape_function_vals(
-        X_train, max_evals=100
+    feature_vals_list, shape_function_vals_list = extract_marginal_curves(
+        m, X_train, max_evals=100
     )
     r["shape_function_vals_list"] = shape_function_vals_list
 
