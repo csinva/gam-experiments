@@ -17,15 +17,16 @@ params_shared_dict = {
         "credit_g",
         "juvenile",
         "compas",
-        "adult",
-        "bike_sharing",
-    ],  # "readmission", # add support2? # add mimic? # add CDI?
+        # "bike_sharing", (regression, not supported)
+        "readmission",
+        # "adult"
+    ],  # add support2? # add mimic? # add CDI?
     "seed": [1, 2, 3],
     "save_dir": [join(repo_dir, "results")],
     "use_cache": [1],
     "n_boosting_rounds": [0, 5, 25, 125],
     "n_boosting_rounds_marginal": [0, 5, 25, 125],
-    "fit_linear_marginal": ["None"], # , "nnls", "ridge"],
+    "fit_linear_marginal": ["None"],  # , "nnls", "ridge"],
     "reg_param": [0.0, 100.0, 1e4],
     "reg_param_marginal": [0.0, 100, 1e4],
     "boosting_strategy": ["cyclic", "greedy"],

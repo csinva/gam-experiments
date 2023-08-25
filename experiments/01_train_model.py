@@ -27,12 +27,12 @@ DSET_KWARGS = {
     "credit_g": {"dataset_name": "credit_g", "data_source": "imodels"},
     "juvenile": {"dataset_name": "juvenile_clean", "data_source": "imodels"},
     "compas": {"dataset_name": "compas_two_year_clean", "data_source": "imodels"},
-    "adult": {"dataset_name": "1182", "data_source": "openml"},
     "bike_sharing": {"dataset_name": "42712", "data_source": "openml"},
-    "readmission": {
-        "dataset_name": "readmission_clean",
-        "data_source": "imodels",
-    },  # big
+    # "readmission": {
+    #     "dataset_name": "readmission_clean",
+    #     "data_source": "imodels",
+    # },  # big, 100k points
+    # "adult": {"dataset_name": "1182", "data_source": "openml"}, # big, 1e6 points
 }
 
 
