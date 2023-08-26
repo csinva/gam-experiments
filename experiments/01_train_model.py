@@ -18,6 +18,7 @@ import imodels
 from imodels import TreeGAMClassifier
 import inspect
 import cache_save_utils
+import warnings
 
 
 DSET_KWARGS = {
@@ -107,6 +108,19 @@ def add_main_args(parser):
         default=30,
         help="Number of GAMs to use in bagging ensemble",
     )
+    parser.add_argument(
+        "--use_select_linear_marginal",
+        type=int,
+        default=0,
+        choices=[0, 1],
+        help="whether to use select cycle features using marginal nnls",
+    )
+    parser.add_argument(
+        "--decay_rate_towards_marginal",
+        type=float,
+        default=1.0,
+        help="decay rate towards marginal",
+    )
 
     return parser
 
@@ -129,6 +143,11 @@ if __name__ == "__main__":
     parser_without_computational_args = add_main_args(parser)
     parser = add_computational_args(deepcopy(parser_without_computational_args))
     args = parser.parse_args()
+
+    # Check arguments
+    if args.decay_rate_towards_marginal < 1.0 and ((args.n_boosting_rounds_marginal == 0) or (args.n_boosting_rounds == 0)):
+        warnings.warn("Must have n_boosting_rounds_marginal > 0 and n_boosting_rounds > 0 if decay_rate_towards_marginal < 1.0")
+        exit(0)
 
     # set up logging
     logger = logging.getLogger()
@@ -163,8 +182,8 @@ if __name__ == "__main__":
         X,
         y,
         test_size=0.2,
-        random_state=42,
-        stratify=y,  # don't shuffle this for now, to make sure gam curves have same points
+        random_state=42,  # don't shuffle this for now, to make sure gam curves have same points (just being lazy)
+        stratify=y,
     )
 
     clf = TreeGAMClassifier(
@@ -174,6 +193,8 @@ if __name__ == "__main__":
         reg_param_marginal=args.reg_param_marginal,
         fit_linear_marginal=args.fit_linear_marginal,
         boosting_strategy=args.boosting_strategy,
+        select_linear_marginal=args.use_select_linear_marginal,
+        decay_rate_towards_marginal=args.decay_rate_towards_marginal,
         random_state=args.seed,
     )
     if args.bagging_ensemble != "None":

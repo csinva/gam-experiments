@@ -16,31 +16,23 @@ params_shared_dict = {
         "breast_cancer",
         "credit_g",
         "juvenile",
-        # "compas",
+        "compas",
         # "bike_sharing", (regression, not supported)
         # "readmission",
         # "adult"
     ],  # add support2? # add mimic? # add CDI?
     "seed": [1, 2, 3],
-    "save_dir": [join(repo_dir, "results", "ensemble")],
+    "save_dir": [join(repo_dir, "results", 'main')],
     "use_cache": [1],
-    # "n_boosting_rounds": [0, 5, 25, 100, 500, 2000],
-    # "n_boosting_rounds_marginal": [0, 5, 25, 125],
-    # "fit_linear_marginal": ["None"],  # , "nnls", "ridge"],
-    # "reg_param": [0.0, 100.0, 1e4],
-    # "reg_param_marginal": [0.0, 100, 1e4],
-    # "boosting_strategy": ["cyclic", "greedy"],
-    "bagging_ensemble": ["None", "samples", "features", "both"],
-    "bagging_n_estimators": [50],
+    "n_boosting_rounds": [0, 1000],
+    "n_boosting_rounds_marginal": [0, 1000],
+    "decay_rate_towards_marginal": [0.5, 0.75, 1.0],
 }
 params_coupled_dict = {
-    ("n_boosting_rounds", "n_boosting_rounds_marginal"): [
-        (n_boosting_rounds, 0) for n_boosting_rounds in [0, 5, 25, 100, 500, 2000]
+    ("fit_linear_marginal", "use_select_linear_marginal"): [
+        ('None', 0),
+        ('NNLS', 1),
     ]
-    + [
-        (0, n_boosting_rounds_marginal)
-        for n_boosting_rounds_marginal in [0, 5, 25, 100, 500, 2000]
-    ],
 }
 
 args_list = submit_utils.get_args_list(
@@ -51,5 +43,6 @@ submit_utils.run_args_list(
     args_list,
     script_name=join(repo_dir, "experiments", "01_train_model.py"),
     # actually_run=False,
-    n_cpus=80,
+    n_cpus=1,
+    # error_logs_directory=join(repo_dir, 'scripts', 'error_logs')
 )
