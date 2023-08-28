@@ -28,12 +28,12 @@ def calc_mean_std_across_curves(shape_function_vals_list_list):
     return 100 * np.mean(stds)
 
 
-def get_ravg_with_stability(r):
+def get_ravg_with_stability(r, experiment_filename="01_train_model.py"):
     ravg = []
     group_keys = [
         k
         for k in imodelsx.process_results.get_main_args_list(
-            experiment_filename="01_train_model.py"
+            experiment_filename=experiment_filename
         )
         if not k == "seed"
     ]

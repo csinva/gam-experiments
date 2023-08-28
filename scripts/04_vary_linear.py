@@ -10,29 +10,30 @@ repo_dir = dirname(dirname(os.path.abspath(__file__)))
 # List of values to sweep over (sweeps over all combinations of these)
 params_shared_dict = {
     "dataset_name": [
-        "sonar",
-        "heart",
-        "diabetes",
-        "breast_cancer",
-        "credit_g",
-        "juvenile",
-        "compas",
-        # "bike_sharing", (regression, not supported)
-        # "readmission",
-        # "adult"
+        "bike_sharing",
+        "friedman1",
+        "friedman2",
+        "friedman3",
+        "diabetes_regr",
+        "abalone",
+        "echo_months",
+        "satellite_image",
+        "california_housing",
     ],  # add support2? # add mimic? # add CDI?
     "seed": [1, 2, 3],
-    "save_dir": [join(repo_dir, "results", 'marginal2')],
+    "save_dir": [join(repo_dir, "results", "linear")],
     "use_cache": [1],
-    "n_boosting_rounds": [0, 1000],
-    "n_boosting_rounds_marginal": [0, 1000],
-    "decay_rate_towards_marginal": [0.5, 0.75, 1.0],
+    # "train_frac": [0.2, 0.5, 0.8],
+    # "y_train_noise_std": [0.0, 1, 10],
+    "collinearity_factor": [0.0, 0.25, 0.5, 0.75, 1.0],
 }
 params_coupled_dict = {
-    # ("fit_linear_marginal", "use_select_linear_marginal"): [
-    #     ('None', 0),
-    #     ('NNLS', 1),
-    # ]
+    ("est_marginal_name", "est_main_name", "use_marginal_divide_by_d"): [
+        ("ridge", "ridge", 0),
+        ("ridge", "ridge", 1),
+        ("None", "ridge", 1),
+        ("ridge", "None", 1),
+    ]
 }
 
 args_list = submit_utils.get_args_list(
@@ -41,7 +42,7 @@ args_list = submit_utils.get_args_list(
 )
 submit_utils.run_args_list(
     args_list,
-    script_name=join(repo_dir, "experiments", "01_train_gam.py"),
+    script_name=join(repo_dir, "experiments", "02_train_linear.py"),
     # actually_run=False,
     n_cpus=64,
     # error_logs_directory=join(repo_dir, 'scripts', 'error_logs')

@@ -19,23 +19,7 @@ from imodels import TreeGAMClassifier
 import inspect
 import cache_save_utils
 import warnings
-
-
-DSET_KWARGS = {
-    "sonar": {"dataset_name": "sonar", "data_source": "pmlb"},
-    "heart": {"dataset_name": "heart", "data_source": "imodels"},
-    "diabetes": {"dataset_name": "diabetes", "data_source": "pmlb"},
-    "breast_cancer": {"dataset_name": "breast_cancer", "data_source": "sklearn"},
-    "credit_g": {"dataset_name": "credit_g", "data_source": "imodels"},
-    "juvenile": {"dataset_name": "juvenile_clean", "data_source": "imodels"},
-    "compas": {"dataset_name": "compas_two_year_clean", "data_source": "imodels"},
-    "bike_sharing": {"dataset_name": "42712", "data_source": "openml"},
-    "readmission": {
-        "dataset_name": "readmission_clean",
-        "data_source": "imodels",
-    },  # big, 100k points
-    "adult": {"dataset_name": "1182", "data_source": "openml"},  # big, 1e6 points
-}
+from imodels.util.data_util import DSET_KWARGS
 
 
 # initialize args
@@ -54,7 +38,7 @@ def add_main_args(parser):
     parser.add_argument(
         "--save_dir",
         type=str,
-        default=join(path_to_repo, "results"),
+        default=join(path_to_repo, "results", 'test'),
         help="directory for saving",
     )
     parser.add_argument(
@@ -79,7 +63,7 @@ def add_main_args(parser):
         "--fit_linear_marginal",
         type=str,
         default="None",
-        choices=[None, "None", "ridge", "nnls"],
+        choices=[None, "None", "ridge", "NNLS"],
         help="whether to fit linear marginal",
     )
     parser.add_argument(
@@ -145,8 +129,19 @@ if __name__ == "__main__":
     args = parser.parse_args()
 
     # Check arguments
-    if args.decay_rate_towards_marginal < 1.0 and ((args.n_boosting_rounds_marginal == 0) or (args.n_boosting_rounds == 0)):
-        warnings.warn("Must have n_boosting_rounds_marginal > 0 and n_boosting_rounds > 0 if decay_rate_towards_marginal < 1.0")
+    if args.decay_rate_towards_marginal < 1.0 and (
+        (args.n_boosting_rounds_marginal == 0) or (args.n_boosting_rounds == 0)
+    ):
+        warnings.warn(
+            "Must have n_boosting_rounds_marginal > 0 and n_boosting_rounds > 0 if decay_rate_towards_marginal < 1.0"
+        )
+        exit(0)
+    elif args.use_select_linear_marginal and (
+        args.fit_linear_marginal != "NNLS" or args.n_boosting_rounds_marginal == 0
+    ):
+        warnings.warn(
+            "Must have fit_linear_marginal == 'NNLS' if use_select_linear_marginal == True"
+        )
         exit(0)
 
     # set up logging

@@ -40,7 +40,7 @@ args_list = submit_utils.get_args_list(
 )
 submit_utils.run_args_list(
     args_list,
-    script_name=join(repo_dir, "experiments", "01_train_model.py"),
+    script_name=join(repo_dir, "experiments", "01_train_gam.py"),
     # actually_run=False,
     n_cpus=32,
     # error_logs_directory=join(repo_dir, 'scripts', 'error_logs')
