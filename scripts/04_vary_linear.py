@@ -10,6 +10,7 @@ repo_dir = dirname(dirname(os.path.abspath(__file__)))
 # List of values to sweep over (sweeps over all combinations of these)
 params_shared_dict = {
     "dataset_name": [
+        # regression datasets
         "bike_sharing",
         "friedman1",
         "friedman2",
@@ -19,21 +20,41 @@ params_shared_dict = {
         "echo_months",
         "satellite_image",
         "california_housing",
+
+        # classification datasets (treating these as regression)
+        "heart",
+        "breast_cancer",
+        "diabetes",
+        "breast_cancer",
+        "credit_g",
+        "juvenile",
+        "compas",
     ],  # add support2? # add mimic? # add CDI?
-    "seed": [1, 2, 3],
+    # "seed": [1, 2, 3],
+    'seed': [1, 2],
     "save_dir": [join(repo_dir, "results", "linear")],
     "use_cache": [1],
+
+    ############# vary data ############
     # "train_frac": [0.2, 0.5, 0.8],
     # "y_train_noise_std": [0.0, 1, 10],
-    "collinearity_factor": [0.0, 0.25, 0.5, 0.75, 1.0],
+    "collinearity_factor": [0.0, 0.5, 1.0],
 }
 params_coupled_dict = {
-    ("est_marginal_name", "est_main_name", "use_marginal_divide_by_d"): [
-        ("ridge", "ridge", 0),
-        ("ridge", "ridge", 1),
-        ("None", "ridge", 1),
-        ("ridge", "None", 1),
+    # ("est_marginal_name", "est_main_name", "use_marginal_divide_by_d"): [
+    #     ("ridge", "ridge", 0),
+    #     ("ridge", "ridge", 1),
+    #     ("None", "ridge", 1),
+    #     ("ridge", "None", 1),
+    # ]
+
+    ("est_marginal_name", "est_main_name", "use_marginal_sign_constraint"): [
+        # ("ridge", "ridge", 0),
+        ("ridge", "NNLS", 1),
+        ("None", "ridge", 0),
+        # ("ridge", "None", 0),
     ]
+
 }
 
 args_list = submit_utils.get_args_list(

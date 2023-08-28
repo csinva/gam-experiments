@@ -62,6 +62,13 @@ def add_main_args(parser):
         default="ridge",
         help="model class to use for main effects. 'None' for None.",
     )
+    parser.add_argument(
+        "--use_marginal_sign_constraint",
+        type=int,
+        default=0,
+        choices=[0, 1],
+        help="whether to constrain main effects to be same sign as marginal effects",
+    )
 
     parser.add_argument(
         "--train_frac",
@@ -183,6 +190,7 @@ if __name__ == "__main__":
         est_main_name=args.est_main_name,
         alphas=alphas,
         marginal_divide_by_d=args.use_marginal_divide_by_d,
+        marginal_sign_constraint=args.use_marginal_sign_constraint,
     )
 
     m.fit(X_train, y_train)
