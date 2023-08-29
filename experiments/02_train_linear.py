@@ -31,7 +31,7 @@ def add_main_args(parser):
     Changing the default arg an argument will break cache compatibility with previous runs.
     """
 
-    # dataset args
+    # dataset args ######################
     parser.add_argument(
         "--dataset_name", type=str, default="heart", help="name of dataset"
     )
@@ -41,8 +41,20 @@ def add_main_args(parser):
         default=0.0,
         help="standard deviation of noise",
     )
+    parser.add_argument(
+        "--collinearity_factor",
+        type=float,
+        default=0,
+        help="factor to make covariates more collinear",
+    )
+    parser.add_argument(
+        "--train_frac",
+        type=float,
+        default=0.8,
+        help="fraction of data to use for training",
+    )
 
-    # training misc args
+    # training misc args ######################
     parser.add_argument("--seed", type=int, default=1, help="random seed")
     parser.add_argument(
         "--save_dir",
@@ -50,6 +62,8 @@ def add_main_args(parser):
         default=join(path_to_repo, "results", "test"),
         help="directory for saving",
     )
+
+    # modeling args ######################
     parser.add_argument(
         "--est_marginal_name",
         type=str,
@@ -69,14 +83,6 @@ def add_main_args(parser):
         choices=[0, 1],
         help="whether to constrain main effects to be same sign as marginal effects",
     )
-
-    parser.add_argument(
-        "--train_frac",
-        type=float,
-        default=0.8,
-        help="fraction of data to use for training",
-    )
-
     parser.add_argument(
         "--use_marginal_divide_by_d",
         type=int,
@@ -85,10 +91,16 @@ def add_main_args(parser):
         help="whether to divide marginal effects by d",
     )
     parser.add_argument(
-        "--collinearity_factor",
+        "--alpha",
         type=float,
-        default=0,
-        help="factor to make covariates more collinear",
+        default=None,
+        help="alpha to use for regularization",
+    )
+    parser.add_argument(
+        '--elasticnet_ratio',
+        type=float,
+        default=0.5,
+        help="ratio of l1 to l2 regularization for elastic net",
     )
 
     return parser
@@ -183,14 +195,15 @@ if __name__ == "__main__":
     y_test = my.transform(y_test.reshape(-1, 1)).squeeze()
 
     # alphas = (0.1, 1, 10, 100, 1000, 10000)  # (0.1, 1, 10, 100, 1000, 10000)
-    alphas = (0.1, 1, 10, 100, 1000, 10000)  # (0.1, 1, 10, 100, 1000, 10000)
+    # alphas = (0.1, 1, 10, 100, 1000, 10000)  # (0.1, 1, 10, 100, 1000, 10000)
     m = MarginalShrinkageLinearModelRegressor(
         random_state=args.seed,
         est_marginal_name=args.est_marginal_name,
         est_main_name=args.est_main_name,
-        alphas=alphas,
+        alphas=args.alpha,
         marginal_divide_by_d=args.use_marginal_divide_by_d,
         marginal_sign_constraint=args.use_marginal_sign_constraint,
+        elasticnet_ratio=args.elasticnet_ratio,
     )
 
     m.fit(X_train, y_train)
