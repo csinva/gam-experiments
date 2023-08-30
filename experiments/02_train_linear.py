@@ -175,6 +175,10 @@ if __name__ == "__main__":
         X, y, feat_names = imodels.get_clean_dataset(
             args.dataset_name, data_source="pmlb"
         )
+    # remove any rows with nan
+    idxs_nan = np.isnan(X).any(axis=1) | np.isnan(y)
+    X = X[~idxs_nan]
+    y = y[~idxs_nan]
 
     if args.collinearity_factor > 0:
         X = make_covariates_more_collinear(
@@ -232,6 +236,11 @@ if __name__ == "__main__":
     lin = m.est_main_
     r["coef"] = lin.coef_
     r["alpha"] = lin.alpha_
+
+
+    # save data stuff
+    r['n_samples'] = X_train.shape[0]
+    r['n_features'] = X_train.shape[1]
 
     # save results
     joblib.dump(r, join(save_dir_unique, "results.pkl"))

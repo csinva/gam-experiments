@@ -33,7 +33,7 @@ params_shared_dict = {
         "compas",
     ],  # add support2? # add mimic? # add CDI?
     # "seed": [1, 2, 3],
-    "seed": [1],
+    "seed": [1, 2, 3],
     "save_dir": [join(repo_dir, "results", "linear")],
     "use_cache": [1],
     ############# vary data ############
@@ -50,17 +50,17 @@ params_coupled_dict = {
         "use_marginal_sign_constraint",
         "use_marginal_divide_by_d",
     ): [
-        # baselines
-        # ("None", "ridge", 0, 1),
-        # ("None", "elasticnet", 0, 1),
+        ##### baselines
+        ("None", "ridge", 0, 1),
+        ("None", "elasticnet", 0, 1),
         ("None", "lasso", 0, 1),
-        # marginal only (for coef comparisons)
+        ##### marginal only (for coef comparisons)
         ("ridge", "None", 0, 1),
-        # sign regularization
-        # ("ridge", "ridge", 1, 1),
-        # ("ridge", "elasticnet", 1, 1),
+        ##### sign regularization
+        ("ridge", "ridge", 1, 1),
+        ("ridge", "elasticnet", 1, 1),
         ("ridge", "lasso", 1, 1),
-        # value regularization
+        ##### value regularization
         # ("ridge", "ridge", 0, 1),
         # ("ridge", "elasticnet", 0, 1),
         # ("ridge", "lasso", 0, 1),
