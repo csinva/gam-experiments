@@ -1,7 +1,7 @@
 from imodelsx import submit_utils
 from os.path import dirname, join
 import os.path
-
+import pmlb
 import numpy as np
 
 repo_dir = dirname(dirname(os.path.abspath(__file__)))
@@ -11,7 +11,8 @@ repo_dir = dirname(dirname(os.path.abspath(__file__)))
 
 # List of values to sweep over (sweeps over all combinations of these)
 params_shared_dict = {
-    "dataset_name": [
+    "dataset_name": pmlb.dataset_names
+    + [
         # regression datasets
         "bike_sharing",
         "friedman1",
@@ -41,15 +42,8 @@ params_shared_dict = {
     # "collinearity_factor": [0.0, 0.5, 1.0],
     # "alpha": [0.1, 1, 1e1, 1e2, 1e3, 1e4, 1e5, 1e6, 1e7],
     # "alpha": np.logspace(-3, 3, num=5).tolist(),
-    # "alpha": np.logspace(-3, 3, num=5).tolist(),
 }
 params_coupled_dict = {
-    # ("est_marginal_name", "est_main_name", "use_marginal_divide_by_d"): [
-    #     ("ridge", "ridge", 0),
-    #     ("ridge", "ridge", 1),
-    #     ("None", "ridge", 1),
-    #     ("ridge", "None", 1),
-    # ]
     (
         "est_marginal_name",
         "est_main_name",
@@ -57,29 +51,19 @@ params_coupled_dict = {
         "use_marginal_divide_by_d",
     ): [
         # baselines
-        ("None", "ridge", 0, 1),
-        ("None", "elasticnet", 0, 1),
+        # ("None", "ridge", 0, 1),
+        # ("None", "elasticnet", 0, 1),
         ("None", "lasso", 0, 1),
-
         # marginal only (for coef comparisons)
         ("ridge", "None", 0, 1),
-
         # sign regularization
-        ("ridge", "ridge", 1, 1),
-        ("ridge", "elasticnet", 1, 1),
+        # ("ridge", "ridge", 1, 1),
+        # ("ridge", "elasticnet", 1, 1),
         ("ridge", "lasso", 1, 1),
-
         # value regularization
-
-
-        # ("None", "ridge", 0, 1),
-        # ("None", "lasso", 0, 1),
-        # marginal shrinkage
         # ("ridge", "ridge", 0, 1),
-        # ("ridge", "NNLS-ridge", 1, 1),
-        # ("ridge", "NNLS-lasso", 1, 1),
-        # ("ridge", "None", 0, 1),  # marginal only
-        # ("ridge", "ridge", 0, 0),  # don't divide by d
+        # ("ridge", "elasticnet", 0, 1),
+        # ("ridge", "lasso", 0, 1),
     ]
 }
 

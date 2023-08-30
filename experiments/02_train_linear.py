@@ -13,6 +13,7 @@ from imodels.util.extract import extract_marginal_curves
 from sklearn.ensemble import BaggingClassifier
 from sklearn.preprocessing import StandardScaler
 from imodels import MarginalShrinkageLinearModelRegressor
+import pmlb
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 import joblib
@@ -97,7 +98,7 @@ def add_main_args(parser):
         help="alpha to use for regularization",
     )
     parser.add_argument(
-        '--elasticnet_ratio',
+        "--elasticnet_ratio",
         type=float,
         default=0.5,
         help="ratio of l1 to l2 regularization for elastic net",
@@ -168,7 +169,13 @@ if __name__ == "__main__":
     )
 
     # split data
-    X, y, feat_names = imodels.get_clean_dataset(**DSET_KWARGS[args.dataset_name])
+    if args.dataset_name in DSET_KWARGS:
+        X, y, feat_names = imodels.get_clean_dataset(**DSET_KWARGS[args.dataset_name])
+    elif args.dataset_name in pmlb.dataset_names:
+        X, y, feat_names = imodels.get_clean_dataset(
+            args.dataset_name, data_source="pmlb"
+        )
+
     if args.collinearity_factor > 0:
         X = make_covariates_more_collinear(
             X, collinearity_factor=args.collinearity_factor, seed=args.seed
