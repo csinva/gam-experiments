@@ -38,6 +38,7 @@ params_shared_dict = {
     "seed": [1],
     "save_dir": [join(repo_dir, "results", "multitask_gam")],
     "use_cache": [1],
+    'use_input_normalization': [0],
 
 }
 params_coupled_dict = {

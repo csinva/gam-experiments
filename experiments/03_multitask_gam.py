@@ -39,6 +39,9 @@ def add_main_args(parser):
         "--dataset_name", type=str, default="heart", help="name of dataset"
     )
     parser.add_argument(
+        '--use_input_normalization', type=int, default=0, choices=[0, 1],
+    )
+    parser.add_argument(
         "--y_train_noise_std",
         type=float,
         default=0.0,
@@ -182,6 +185,10 @@ if __name__ == "__main__":
     idxs_nan = np.isnan(X).any(axis=1) | pd.isna(y)
     X = X[~idxs_nan]
     y = y[~idxs_nan]
+
+    y = StandardScaler().fit_transform(y.reshape(-1, 1)).flatten()
+    if args.use_input_normalization:
+        X = StandardScaler().fit_transform(X)
 
     if args.collinearity_factor > 0:
         X = make_covariates_more_collinear(
