@@ -18,7 +18,7 @@ params_shared_dict = {
         "friedman2",
         "friedman3",
         "diabetes_regr",
-        "abalone",
+        # "abalone", # this has some string issue...
         "echo_months",
         "satellite_image",
         "california_housing",
@@ -38,9 +38,30 @@ params_shared_dict = {
     "seed": [1],
     "save_dir": [join(repo_dir, "results", "multitask_gam")],
     "use_cache": [1],
-    'use_multitask': [0, 1],
+
 }
 params_coupled_dict = {
+    (
+        "use_multitask",
+        "interactions",
+        "linear_penalty",
+        "n_boosting_rounds",
+    ): [
+        # baseline (single-task)
+        (0, 0, 'ridge', 0),
+        (0, 0.95, 'ridge', 0),
+
+        # multitask
+        (1, 0, 'ridge', 0),
+        (1, 0.95, 'ridge', 0),
+
+        # vary linear penalty
+        # (1, 0, 'lasso', 0),
+        # (1, 0, 'elasticnet', 0),
+
+        # multitask boosted
+        # (1, 0, 'ridge', 2),
+    ]
 }
 
 args_list = submit_utils.get_args_list(
@@ -53,7 +74,8 @@ submit_utils.run_args_list(
     script_name=join(repo_dir, "experiments", "03_multitask_gam.py"),
     # actually_run=False,
     repeat_failed_jobs=True,
-    n_cpus=48,
+    n_cpus=64,
+    shuffle=True,
     # reverse=True,
     # error_logs_directory=join(repo_dir, 'scripts', 'error_logs')
 )

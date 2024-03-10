@@ -16,13 +16,14 @@ import numpy as np
 from sklearn import metrics
 from sklearn.metrics import accuracy_score, roc_auc_score
 from sklearn.model_selection import train_test_split
+from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
 import os.path
 from imodels.util.extract import extract_marginal_curves
 from sklearn.ensemble import BaggingClassifier
 from sklearn.preprocessing import StandardScaler
-from imodels import MarginalShrinkageLinearModelRegressor
 import pmlb
 import imodels.algebraic.gam_multitask
+import pandas as pd
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -73,6 +74,28 @@ def add_main_args(parser):
         choices=[0, 1],
         help="whether to use multitask",
     )
+    parser.add_argument(
+        '--interactions',
+        type=float,
+        default=0.95,
+        help='''Interaction terms to be included in the model. Options are:
+Integer (1 <= interactions): Count of interactions to be automatically selected
+Percentage (interactions < 1.0): Determine the integer count of interactions by multiplying the number of features by this percentage
+List of tuples: The tuples contain the indices of the features within the additive term
+''')
+    parser.add_argument(
+        '--linear_penalty',
+        type=str,
+        default='ridge',
+        choices=['ridge', 'lasso', 'elasticnet'],
+        help='penalty for linear model'
+    )
+    parser.add_argument(
+        '--n_boosting_rounds',
+        type=int,
+        default=0,
+        help='number of boosting rounds'
+    )
 
     return parser
 
@@ -103,6 +126,13 @@ def make_covariates_more_collinear(X, collinearity_factor=0.5, seed=1):
     return X
 
 
+def _check_args(args):
+    """Check that the arguments are valid"""
+    if not args.use_multitask:
+        assert args.linear_penalty == 'ridge'
+        assert args.n_boosting_rounds >= 0
+
+
 if __name__ == "__main__":
     # get args
     parser = argparse.ArgumentParser()
@@ -110,6 +140,7 @@ if __name__ == "__main__":
     parser = add_computational_args(
         deepcopy(parser_without_computational_args))
     args = parser.parse_args()
+    _check_args(args)
 
     # set up logging
     logger = logging.getLogger()
@@ -148,7 +179,7 @@ if __name__ == "__main__":
             args.dataset_name, data_source="pmlb"
         )
     # remove any rows with nan
-    idxs_nan = np.isnan(X).any(axis=1) | np.isnan(y)
+    idxs_nan = np.isnan(X).any(axis=1) | pd.isna(y)
     X = X[~idxs_nan]
     y = y[~idxs_nan]
 
@@ -169,10 +200,17 @@ if __name__ == "__main__":
             0, args.y_train_noise_std, size=y_train.shape
         )
 
-    m = imodels.algebraic.gam_multitask.MultiTaskGAMRegressor(
+    est = imodels.algebraic.gam_multitask.MultiTaskGAMRegressor(
         multitask=args.use_multitask,
+        linear_penalty=args.linear_penalty,
+        interactions=args.interactions,
         random_state=args.seed,
     )
+    if args.n_boosting_rounds > 0:
+        m = AdaBoostRegressor(
+            estimator=est, n_estimators=args.n_boosting_rounds)
+    else:
+        m = est
     m.fit(X_train, y_train)
 
     # check roc auc score
@@ -193,8 +231,11 @@ if __name__ == "__main__":
         r["mse_test"] = metrics.mean_squared_error(y_test, m.predict(X_test))
         r['corr_test'] = np.corrcoef(y_test, m.predict(X_test))[0, 1]
 
-    if args.use_multitask:
+    if args.use_multitask and hasattr(m, 'lin_model'):
         r['coef_'] = m.lin_model.coef_
+        r['best_alpha'] = m.lin_model.alpha_
+        if hasattr(m, 'term_names_'):
+            r['term_names_'] = m.term_names_
 
     # save data stuff
     r['n_samples'] = X_train.shape[0]
