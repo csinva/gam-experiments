@@ -38,30 +38,32 @@ params_shared_dict = {
     "seed": [1],
     "save_dir": [join(repo_dir, "results", "multitask_gam")],
     "use_cache": [1],
-    'use_input_normalization': [0],
+    'use_input_normalization': [0, 1],
 
 }
 params_coupled_dict = {
     (
         "use_multitask",
         "interactions",
+        'use_onehot_prior',
         "linear_penalty",
         "n_boosting_rounds",
     ): [
         # baseline (single-task)
-        (0, 0, 'ridge', 0),
-        (0, 0.95, 'ridge', 0),
+        (0, 0, 1, 'ridge', 0),
+        (0, 0.95, 1, 'ridge', 0),
 
         # multitask
-        (1, 0, 'ridge', 0),
-        (1, 0.95, 'ridge', 0),
+        (1, 0, 1, 'ridge', 0),
+        (1, 0.95, 1, 'ridge', 0),  # change interactions
+        (1, 0.95, 0, 'ridge', 0),  # remove onehot prior
 
         # vary linear penalty
-        # (1, 0, 'lasso', 0),
-        # (1, 0, 'elasticnet', 0),
+        # (1, 0, 1, 'lasso', 0),
+        # (1, 0, 1, 'elasticnet', 0),
 
-        # multitask boosted
-        # (1, 0, 'ridge', 2),
+        # boosted
+        # (1, 0, 1, 'ridge', 2),
     ]
 }
 
@@ -75,7 +77,7 @@ submit_utils.run_args_list(
     script_name=join(repo_dir, "experiments", "03_multitask_gam.py"),
     # actually_run=False,
     repeat_failed_jobs=True,
-    n_cpus=64,
+    n_cpus=80,
     shuffle=True,
     # reverse=True,
     # error_logs_directory=join(repo_dir, 'scripts', 'error_logs')

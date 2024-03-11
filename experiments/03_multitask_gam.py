@@ -87,6 +87,13 @@ Percentage (interactions < 1.0): Determine the integer count of interactions by 
 List of tuples: The tuples contain the indices of the features within the additive term
 ''')
     parser.add_argument(
+        '--use_onehot_prior',
+        type=int,
+        default=1,
+        choices=[0, 1],
+        help='whether to use onehot prior'
+    )
+    parser.add_argument(
         '--linear_penalty',
         type=str,
         default='ridge',
