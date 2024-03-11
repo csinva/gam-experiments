@@ -187,7 +187,7 @@ if __name__ == "__main__":
         args=args, save_dir=save_dir_unique, fname="params.json", r=r
     )
 
-    # split data
+    # fetch data
     if args.dataset_name in DSET_KWARGS:
         X, y, feat_names = imodels.get_clean_dataset(
             **DSET_KWARGS[args.dataset_name])
@@ -195,15 +195,22 @@ if __name__ == "__main__":
         X, y, feat_names = imodels.get_clean_dataset(
             args.dataset_name, data_source="pmlb"
         )
-    # remove any rows with nan
-    idxs_nan = np.isnan(X).any(axis=1) | pd.isna(y)
+    # remove nan rows and normalize
+    if len(y.shape) == 1 or y.shape[1] == 1:
+        idxs_nan = np.isnan(X).any(axis=1) | pd.isna(y)
+        y = y.reshape(-1, 1)
+    else:
+        idxs_nan = np.isnan(X).any(axis=1) | np.isnan(y).any(axis=1)
+
     X = X[~idxs_nan]
     y = y[~idxs_nan]
-
-    y = StandardScaler().fit_transform(y.reshape(-1, 1)).flatten()
+    y = StandardScaler().fit_transform(y)
+    if y.shape[1] == 1:
+        y = y.reshape(-1)
     if args.use_input_normalization:
         X = StandardScaler().fit_transform(X)
 
+    # process and split data
     if args.collinearity_factor > 0:
         X = make_covariates_more_collinear(
             X, collinearity_factor=args.collinearity_factor, seed=args.seed
@@ -214,7 +221,6 @@ if __name__ == "__main__":
         test_size=1 - args.train_frac,
         random_state=args.seed,
     )
-
     # optionally add noise to the data
     if args.y_train_noise_std > 0:
         y_train = y_train.astype(float) + np.random.normal(
