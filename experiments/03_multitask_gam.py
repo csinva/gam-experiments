@@ -39,7 +39,7 @@ def add_main_args(parser):
         "--dataset_name", type=str, default="heart", help="name of dataset"
     )
     parser.add_argument(
-        '--use_input_normalization', type=int, default=0, choices=[0, 1],
+        '--use_input_normalization', type=int, default=1, choices=[0, 1],
     )
     parser.add_argument(
         "--y_train_noise_std",
@@ -89,7 +89,7 @@ List of tuples: The tuples contain the indices of the features within the additi
     parser.add_argument(
         '--use_onehot_prior',
         type=int,
-        default=1,
+        default=0,
         choices=[0, 1],
         help='whether to use onehot prior'
     )
@@ -99,6 +99,13 @@ List of tuples: The tuples contain the indices of the features within the additi
         default='ridge',
         choices=['ridge', 'lasso', 'elasticnet'],
         help='penalty for linear model'
+    )
+    parser.add_argument(
+        '--use_renormalize_features',
+        type=int,
+        default=0,
+        choices=[0, 1],
+        help='whether to renormalize features from ebm curves'
     )
     parser.add_argument(
         '--n_boosting_rounds',
@@ -219,6 +226,8 @@ if __name__ == "__main__":
         linear_penalty=args.linear_penalty,
         interactions=args.interactions,
         random_state=args.seed,
+        onehot_prior=bool(args.use_onehot_prior),
+        renormalize_features=bool(args.use_renormalize_features),
     )
     if args.n_boosting_rounds > 0:
         m = AdaBoostRegressor(
@@ -246,10 +255,10 @@ if __name__ == "__main__":
         r['corr_test'] = np.corrcoef(y_test, m.predict(X_test))[0, 1]
 
     if args.use_multitask and hasattr(m, 'lin_model'):
-        r['coef_'] = m.lin_model.coef_
+        # r['coef_'] = m.lin_model.coef_
         r['best_alpha'] = m.lin_model.alpha_
-        if hasattr(m, 'term_names_'):
-            r['term_names_'] = m.term_names_
+        # if hasattr(m, 'term_names_'):
+        # r['term_names_'] = m.term_names_
 
     # save data stuff
     r['n_samples'] = X_train.shape[0]
