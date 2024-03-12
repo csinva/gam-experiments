@@ -29,17 +29,17 @@ figs_dsets_classification = [
     "credit_g",
     "juvenile",
     "compas",
-],  # add support2? # add mimic? # add CDI?
+]  # add support2? # add mimic? # add CDI?
 
 
 # List of values to sweep over (sweeps over all combinations of these)
 params_shared_dict = {
-    "dataset_name": pmlb.regression_dataset_names,
-    # ['flags_multitask'],
-    # figs_dsets_regr \
-
-    # [n for n in DSET_CLASSIFICATION_MULTITASK_KWARGS],
-    # figs_dsets_cls + pmlb.classification_dataset_names + \
+    "dataset_name":
+        pmlb.regression_dataset_names +
+        figs_dsets_regr +
+        [n for n in DSET_CLASSIFICATION_MULTITASK_KWARGS] +
+        figs_dsets_classification +
+        pmlb.classification_dataset_names,
 
     "seed": [1],
     # "save_dir": [join(repo_dir, "results", "multitask_gam")],
@@ -57,13 +57,13 @@ params_coupled_dict = {
         "n_boosting_rounds",
     ): [
         # baseline (single-task)
-        # (0, 0.95, 'ridge', 0, 0),
+        (0, 0.95, 'ridge', 0, 0, 0),
         # (0, 0, 'ridge', 0),  # remove interactions
 
         # multitask
         (1, 0.95, 'ridge', 0, 0, 0),  # current best
-        (1, 0.95, 'ridge', 1, 0, 0),  # use internal classifiers
-        (1, 0.95, 'ridge', 0, 1, 0),  # use onehot_prior
+        # (1, 0.95, 'ridge', 1, 0, 0),  # use internal classifiers
+        # (1, 0.95, 'ridge', 0, 1, 0),  # use onehot_prior
         # (1, 0, 'ridge', 0),  # remove interactions
 
         # renormalize_features

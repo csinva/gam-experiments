@@ -189,8 +189,7 @@ def _get_data(args, problem_type: str):
             X, collinearity_factor=args.collinearity_factor, seed=args.seed
         )
     X_train, X_test, y_train, y_test = train_test_split(
-        X,
-        y,
+        X, y,
         test_size=1 - args.train_frac,
         random_state=args.seed,
     )
@@ -296,7 +295,6 @@ if __name__ == "__main__":
                 y_test, m.predict_proba(X_test)[:, 1])
             r["acc_test"] = metrics.accuracy_score(y_test, m.predict(X_test))
         else:
-
             preds = m.predict(X_train)
             preds_proba = m.predict_proba(X_train)
             preds_proba = np.vstack([p[:, 1] for p in preds_proba]).T
