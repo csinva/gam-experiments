@@ -35,7 +35,7 @@ figs_dsets_classification = [
 # List of values to sweep over (sweeps over all combinations of these)
 params_shared_dict = {
     "dataset_name":
-        pmlb.regression_dataset_names +
+        [d for d in pmlb.regression_dataset_names if not '_fri_' in d] +
         figs_dsets_regr,
         # [n for n in DSET_CLASSIFICATION_MULTITASK_KWARGS] +
         # figs_dsets_classification +
@@ -43,7 +43,6 @@ params_shared_dict = {
 
     "seed": [1],
     "save_dir": [join(repo_dir, "results", "multitask_gam_mar12")],
-    # "save_dir": [join(repo_dir, "results", "multitask_sweep_train_frac_mar12")],
     # 'train_frac': [0.1, 0.25, 0.5, 0.8],
     'train_frac': [0.8],
     "use_cache": [1],
@@ -53,19 +52,20 @@ params_coupled_dict = {
     (
         "use_multitask",
         "interactions",
-        "linear_penalty",
-        'use_internal_classifiers',
-        'use_onehot_prior',
-        'use_fit_target_curves',
-        # "n_boosting_rounds",
+        "n_boosting_rounds",
+        'max_rounds',
+        # "linear_penalty",
+        # 'use_internal_classifiers',
+        # 'use_onehot_prior',
+        # 'use_fit_target_curves',
     ): [
         # baseline (single-task)
-        (0, 0.95, 'ridge', 0, 0, 1),
-        # (0, 0, 'ridge', 0),  # remove interactions
+        (0, 0.95, 0, 5000),
 
         # multitask
-        (1, 0.95, 'ridge', 0, 0, 1),  # current best
-        (1, 0.95, 'ridge', 0, 0, 0),  # don't fit target curves
+        (1, 0.95, 0, 5000),  # current best
+        (1, 0.95, 8, 50),  # current best
+        # (1, 0.95, 'ridge', 0, 0, 0),  # don't fit target curves
         # (1, 0.95, 'ridge', 1, 0, 0),  # use internal classifiers
         # (1, 0.95, 'ridge', 0, 1, 0),  # use onehot_prior
         # (1, 0, 'ridge', 0),  # remove interactions
@@ -87,7 +87,7 @@ submit_utils.run_args_list(
     script_name=join(repo_dir, "experiments", "03_multitask_gam.py"),
     # actually_run=False,
     # repeat_failed_jobs=True,
-    n_cpus=60,
+    n_cpus=12,
     # n_cpus=1,
     # shuffle=True,
     # reverse=True,

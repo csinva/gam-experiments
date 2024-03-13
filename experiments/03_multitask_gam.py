@@ -134,6 +134,12 @@ List of tuples: The tuples contain the indices of the features within the additi
         default=0,
         help='number of boosting rounds'
     )
+    parser.add_argument(
+        '--max_rounds',
+        type=int,
+        default=5000,
+        help='number of cyclic rounds for each EBM (lower in conjunction with increasing n_boosting_rounds)',
+    )
 
     return parser
 
@@ -226,6 +232,7 @@ def _get_model(args):
         use_internal_classifiers=bool(args.use_internal_classifiers),
         use_normalize_feature_targets=bool(args.use_normalize_feature_targets),
         fit_target_curves=bool(args.use_fit_target_curves),
+        ebm_kwargs={'max_rounds': args.max_rounds},
     )
     if args.dataset_name in list(DSET_CLASSIFICATION_KWARGS.keys()) + list(DSET_CLASSIFICATION_MULTITASK_KWARGS.keys()) + pmlb.classification_dataset_names:
         est = imodels.algebraic.gam_multitask.MultiTaskGAMClassifier(**kwargs)
@@ -349,5 +356,5 @@ if __name__ == "__main__":
 
     # save results
     joblib.dump(r, join(save_dir_unique, "results.pkl"))
-    joblib.dump(m, join(save_dir_unique, "model.pkl"))
+    # joblib.dump(m, join(save_dir_unique, "model.pkl"))
     logging.info("Succesfully completed :)\n\n")
