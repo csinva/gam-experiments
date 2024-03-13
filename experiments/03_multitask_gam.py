@@ -23,6 +23,7 @@ from sklearn.ensemble import BaggingClassifier
 from sklearn.preprocessing import StandardScaler
 import pmlb
 import imodels.algebraic.gam_multitask
+from imodels.util.ensemble import ResidualBoostingRegressor
 import pandas as pd
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -135,6 +136,13 @@ List of tuples: The tuples contain the indices of the features within the additi
         help='number of boosting rounds'
     )
     parser.add_argument(
+        '--boosting_strategy',
+        type=str,
+        default='adaboost',
+        choices=['adaboost', 'residual'],
+        help='strategy for boosting',
+    )
+    parser.add_argument(
         '--max_rounds',
         type=int,
         default=5000,
@@ -241,12 +249,15 @@ def _get_model(args):
     else:
         raise ValueError(f"dataset {args.dataset_name} not found")
     if args.n_boosting_rounds > 0:
-        if isinstance(est, ClassifierMixin):
-            m = AdaBoostClassifier(
-                estimator=est, n_estimators=args.n_boosting_rounds)
-        else:
-            m = AdaBoostRegressor(
-                estimator=est, n_estimators=args.n_boosting_rounds)
+        m = {
+            ('adaboost', True): AdaBoostRegressor,
+            ('adaboost', False): AdaBoostClassifier,
+            ('residual', True): ResidualBoostingRegressor,
+            ('residual', False): ResidualBoostingRegressor,
+        }[args.boosting_strategy, isinstance(est, RegressorMixin)](
+            estimator=est,
+            n_estimators=args.n_boosting_rounds,
+        )
     else:
         m = est
     return m

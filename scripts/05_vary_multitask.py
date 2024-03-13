@@ -54,17 +54,25 @@ params_coupled_dict = {
         "interactions",
         "n_boosting_rounds",
         'max_rounds',
+        'boosting_strategy',
         # "linear_penalty",
         # 'use_internal_classifiers',
         # 'use_onehot_prior',
         # 'use_fit_target_curves',
     ): [
         # baseline (single-task)
-        (0, 0.95, 0, 5000),
+        (0, 0.95, 0, 5000, 'adaboost'),
 
         # multitask
-        (1, 0.95, 0, 5000),  # current best
-        (1, 0.95, 8, 50),  # current best
+        (1, 0.95, 0, 5000, 'adaboost'),  # current best
+
+        # variations
+        (1, 0.95, 8, 50, 'adaboost'),  # vary boosting
+        (1, 0.95, 4, 100, 'adaboost'),  # vary boosting
+        (1, 0.95, 2, 100, 'adaboost'),  # vary boosting
+        (1, 0.95, 8, 50, 'residual'),  # vary boosting
+        (1, 0.95, 4, 100, 'residual'),  # vary boosting
+        (1, 0.95, 2, 100, 'residual'),  # vary boosting
         # (1, 0.95, 'ridge', 0, 0, 0),  # don't fit target curves
         # (1, 0.95, 'ridge', 1, 0, 0),  # use internal classifiers
         # (1, 0.95, 'ridge', 0, 1, 0),  # use onehot_prior
@@ -87,9 +95,9 @@ submit_utils.run_args_list(
     script_name=join(repo_dir, "experiments", "03_multitask_gam.py"),
     # actually_run=False,
     # repeat_failed_jobs=True,
-    n_cpus=12,
+    n_cpus=36,
     # n_cpus=1,
-    # shuffle=True,
+    shuffle=True,
     # reverse=True,
     # error_logs_directory=join(repo_dir, 'scripts', 'error_logs')
 )
