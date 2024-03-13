@@ -108,6 +108,20 @@ List of tuples: The tuples contain the indices of the features within the additi
         help='penalty for linear model'
     )
     parser.add_argument(
+        '--use_fit_target_curves',
+        type=int,
+        default=1,
+        choices=[0, 1],
+        help='whether to fit target curve directly (must be 1 when given multiple outputs)',
+    )
+    parser.add_argument(
+        '--use_normalize_feature_targets',
+        type=int,
+        default=0,
+        choices=[0, 1],
+        help='whether to normalize outputs for internal classifiers (as opposed to regressors)'
+    )
+    parser.add_argument(
         '--use_renormalize_features',
         type=int,
         default=0,
@@ -210,6 +224,8 @@ def _get_model(args):
         onehot_prior=bool(args.use_onehot_prior),
         renormalize_features=bool(args.use_renormalize_features),
         use_internal_classifiers=bool(args.use_internal_classifiers),
+        use_normalize_feature_targets=bool(args.use_normalize_feature_targets),
+        fit_target_curves=bool(args.use_fit_target_curves),
     )
     if args.dataset_name in list(DSET_CLASSIFICATION_KWARGS.keys()) + list(DSET_CLASSIFICATION_MULTITASK_KWARGS.keys()) + pmlb.classification_dataset_names:
         est = imodels.algebraic.gam_multitask.MultiTaskGAMClassifier(**kwargs)

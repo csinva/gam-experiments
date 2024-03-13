@@ -36,14 +36,16 @@ figs_dsets_classification = [
 params_shared_dict = {
     "dataset_name":
         pmlb.regression_dataset_names +
-        figs_dsets_regr +
-        [n for n in DSET_CLASSIFICATION_MULTITASK_KWARGS] +
-        figs_dsets_classification +
-        pmlb.classification_dataset_names,
+        figs_dsets_regr,
+        # [n for n in DSET_CLASSIFICATION_MULTITASK_KWARGS] +
+        # figs_dsets_classification +
+        # pmlb.classification_dataset_names,
 
     "seed": [1],
-    # "save_dir": [join(repo_dir, "results", "multitask_gam")],
     "save_dir": [join(repo_dir, "results", "multitask_gam_mar12")],
+    # "save_dir": [join(repo_dir, "results", "multitask_sweep_train_frac_mar12")],
+    # 'train_frac': [0.1, 0.25, 0.5, 0.8],
+    'train_frac': [0.8],
     "use_cache": [1],
 
 }
@@ -54,14 +56,16 @@ params_coupled_dict = {
         "linear_penalty",
         'use_internal_classifiers',
         'use_onehot_prior',
-        "n_boosting_rounds",
+        'use_fit_target_curves',
+        # "n_boosting_rounds",
     ): [
         # baseline (single-task)
-        (0, 0.95, 'ridge', 0, 0, 0),
+        (0, 0.95, 'ridge', 0, 0, 1),
         # (0, 0, 'ridge', 0),  # remove interactions
 
         # multitask
-        (1, 0.95, 'ridge', 0, 0, 0),  # current best
+        (1, 0.95, 'ridge', 0, 0, 1),  # current best
+        (1, 0.95, 'ridge', 0, 0, 0),  # don't fit target curves
         # (1, 0.95, 'ridge', 1, 0, 0),  # use internal classifiers
         # (1, 0.95, 'ridge', 0, 1, 0),  # use onehot_prior
         # (1, 0, 'ridge', 0),  # remove interactions
@@ -83,7 +87,7 @@ submit_utils.run_args_list(
     script_name=join(repo_dir, "experiments", "03_multitask_gam.py"),
     # actually_run=False,
     # repeat_failed_jobs=True,
-    n_cpus=80,
+    n_cpus=60,
     # n_cpus=1,
     # shuffle=True,
     # reverse=True,
