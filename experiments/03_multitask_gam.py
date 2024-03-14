@@ -19,11 +19,11 @@ from sklearn.model_selection import train_test_split
 from sklearn.ensemble import GradientBoostingClassifier, GradientBoostingRegressor, AdaBoostClassifier, AdaBoostRegressor
 import os.path
 from imodels.util.extract import extract_marginal_curves
-from sklearn.ensemble import BaggingClassifier
+from sklearn.ensemble import BaggingClassifier, BaggingRegressor
 from sklearn.preprocessing import StandardScaler
 import pmlb
 import imodels.algebraic.gam_multitask
-from imodels.util.ensemble import ResidualBoostingRegressor
+from imodels.util.ensemble import ResidualBoostingRegressor, SimpleBaggingRegressor
 import pandas as pd
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -139,7 +139,7 @@ List of tuples: The tuples contain the indices of the features within the additi
         '--boosting_strategy',
         type=str,
         default='adaboost',
-        choices=['adaboost', 'residual'],
+        choices=['adaboost', 'residual', 'bagging'],
         help='strategy for boosting',
     )
     parser.add_argument(
@@ -253,7 +253,9 @@ def _get_model(args):
             ('adaboost', True): AdaBoostRegressor,
             ('adaboost', False): AdaBoostClassifier,
             ('residual', True): ResidualBoostingRegressor,
-            ('residual', False): ResidualBoostingRegressor,
+            # ('residual', False): ResidualBoostingRegressor,
+            ('bagging', True): SimpleBaggingRegressor,
+            # ('bagging', False): BaggingClassifier,
         }[args.boosting_strategy, isinstance(est, RegressorMixin)](
             estimator=est,
             n_estimators=args.n_boosting_rounds,
