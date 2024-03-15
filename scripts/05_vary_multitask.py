@@ -69,19 +69,37 @@ params_coupled_dict = {
         (1, 0.95, 8, 5000, 'bagging'),  # current best
 
         # variations
-        (1, 0.95, 8, 50, 'adaboost'),  # vary boosting
-        (1, 0.95, 4, 100, 'adaboost'),  # vary boosting
-        (1, 0.95, 2, 100, 'adaboost'),  # vary boosting
         (1, 0.95, 8, 50, 'residual'),  # vary boosting
         (1, 0.95, 4, 100, 'residual'),  # vary boosting
         (1, 0.95, 2, 100, 'residual'),  # vary boosting
         (1, 0.95, 8, 50, 'bagging'),  # vary boosting
         (1, 0.95, 8, 100, 'bagging'),  # vary boosting
+
+
+        #### repeat with no interactions #####
+        # baseline (single-task)
+        (0, 0, 0, 5000, 'adaboost'),
+        (0, 0, 8, 5000, 'bagging'),
+
+        # multitask
+        (1, 0, 0, 5000, 'adaboost'),  # current best
+        (1, 0, 8, 5000, 'bagging'),  # current best
+
+        # variations
+        (1, 0, 8, 50, 'residual'),  # vary boosting
+        (1, 0, 4, 100, 'residual'),  # vary boosting
+        (1, 0, 2, 100, 'residual'),  # vary boosting
+        (1, 0, 8, 50, 'bagging'),  # vary boosting
+        (1, 0, 8, 100, 'bagging'),  # vary boosting
+
         # (1, 0.95, 8, 5000, 'bagging'),  # vary boosting
         # (1, 0.95, 'ridge', 0, 0, 0),  # don't fit target curves
         # (1, 0.95, 'ridge', 1, 0, 0),  # use internal classifiers
         # (1, 0.95, 'ridge', 0, 1, 0),  # use onehot_prior
         # (1, 0, 'ridge', 0),  # remove interactions
+        # (1, 0.95, 8, 50, 'adaboost'),  # vary boosting
+        # (1, 0.95, 4, 100, 'adaboost'),  # vary boosting
+        # (1, 0.95, 2, 100, 'adaboost'),  # vary boosting
 
         # renormalize_features
         # remove onehot prior
