@@ -1,37 +1,34 @@
+from sklearn.datasets import make_classification
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-
-from gam.kan import KAN
-
-
-def test_mul():
-    kan = KAN([2, 2, 1], base_activation=nn.Identity)
-    optimizer = torch.optim.LBFGS(kan.parameters(), lr=1)
-    with tqdm(range(100)) as pbar:
-        for i in pbar:
-            loss, reg_loss = None, None
-
-            def closure():
-                optimizer.zero_grad()
-                x = torch.rand(1024, 2)
-                y = kan(x, update_grid=(i % 20 == 0))
-
-                assert y.shape == (1024, 1)
-                nonlocal loss, reg_loss
-                u = x[:, 0]
-                v = x[:, 1]
-                loss = nn.functional.mse_loss(
-                    y.squeeze(-1), (u + v) / (1 + u * v))
-                reg_loss = kan.regularization_loss(1, 0)
-                (loss + 1e-5 * reg_loss).backward()
-                return loss + reg_loss
-
-            optimizer.step(closure)
-            pbar.set_postfix(mse_loss=loss.item(), reg_loss=reg_loss.item())
-    for layer in kan.layers:
-        print(layer.spline_weight)
-
+from gam.kan_modules import KAN
+import torch
+import torch.nn as nn
+import torch.optim as optim
+import torchvision
+import torchvision.transforms as transforms
+from torch.utils.data import DataLoader
+from tqdm import tqdm
+from sklearn.model_selection import train_test_split
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.utils.multiclass import check_classification_targets
+from sklearn.utils.validation import check_X_y
+import numpy as np
+from gam.kan_classifiers import KANClassifier
 
 if __name__ == '__main__':
-    test_mul()
+    n = 2000
+    d = 20
+    # model_type = 'KAN'
+    model_type = 'KANGAM'
+    X, y = make_classification(n_samples=n, n_features=d, n_informative=2)
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2)
+
+    # fit
+    clf = KANClassifier(device='cpu')
+    clf.fit(X_train, y_train)
+    clf.model.eval()
+    y_pred = clf.predict(X_test)
+    accuracy = (y_pred == y_test).mean()
+    print(f"Accuracy: {accuracy}")
