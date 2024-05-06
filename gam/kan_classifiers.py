@@ -15,12 +15,13 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import check_X_y
 import numpy as np
+import logging
 from gam.kan_modules import KAN, KANGAM
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class KANClassifier(BaseEstimator, ClassifierMixin):
-    def __init__(self, hidden_layer_size=64, model_type='KAN', device=device):
+    def __init__(self, hidden_layer_size=64, model_type='KAN', device=device, regularize_ridge=0.0):
         '''
         Params
         ------
@@ -32,8 +33,9 @@ class KANClassifier(BaseEstimator, ClassifierMixin):
         self.hidden_layer_size = hidden_layer_size
         self.model_type = model_type
         self.device = device
+        self.regularize_ridge = regularize_ridge
 
-    def fit(self, X, y, batch_size=64):
+    def fit(self, X, y, batch_size=512):
         if isinstance(self, ClassifierMixin):
             check_classification_targets(y)
             self.classes_, y = np.unique(y, return_inverse=True)
@@ -69,21 +71,27 @@ class KANClassifier(BaseEstimator, ClassifierMixin):
         # Define loss
         criterion = nn.CrossEntropyLoss()
         val_losses = []
-        for epoch in range(100):
+        for epoch in tqdm(range(100)):
             # Train
             self.model.train()
-            with tqdm(loader_train) as pbar:
-                for i, (x, labs) in enumerate(pbar):
-                    x = x.view(-1, num_features).to(self.device)
-                    optimizer.zero_grad()
-                    output = self.model(x)
-                    loss = criterion(output, labs.to(self.device))
-                    loss.backward()
-                    optimizer.step()
-                    accuracy = (output.argmax(dim=1) ==
-                                labs.to(self.device)).float().mean()
-                    pbar.set_postfix(loss=loss.item(), accuracy=accuracy.item(
-                    ), lr=optimizer.param_groups[0]['lr'])
+            # with tqdm(loader_train) as pbar:
+            # for i, (x, labs) in enumerate(pbar):
+            for x, labs in loader_train:
+                x = x.view(-1, num_features).to(self.device)
+                optimizer.zero_grad()
+                output = self.model(x)
+                loss = criterion(output, labs.to(self.device))
+
+                if self.model_type == 'KANGAM':
+                    loss += self.model.regularization_loss(
+                        regularize_ridge=self.regularize_ridge)
+
+                loss.backward()
+                optimizer.step()
+                # accuracy = (output.argmax(dim=1) ==
+                # labs.to(self.device)).float().mean()
+                # pbar.set_postfix(loss=loss.item(), accuracy=accuracy.item(
+                # ), lr=optimizer.param_groups[0]['lr'])
 
             # Validation
             self.model.eval()
@@ -105,13 +113,13 @@ class KANClassifier(BaseEstimator, ClassifierMixin):
             # Update learning rate
             scheduler.step()
 
-            print(
-                f"Epoch {epoch + 1}, Tune Loss: {val_loss:.4f}, Tune Acc: {val_accuracy:.4f}"
-            )
+            # print(
+            #     f"Epoch {epoch + 1}, Tune Loss: {val_loss:.4f}, Tune Acc: {val_accuracy:.4f}"
+            # )
 
             # apply early stopping
             if len(val_losses) > 3 and val_losses[-1] > val_losses[-2]:
-                print("Early stopping")
+                logging.debug("Early stopping")
                 return self
 
         return self

@@ -314,3 +314,11 @@ class KANGAM(torch.nn.Module):
 
         features = features.view(x.size(0), -1)
         return self.linear(features)
+
+    def regularization_loss(self, regularize_activation=1.0, regularize_entropy=1.0, regularize_ridge=1.0):
+        return sum(
+            layer.regularization_loss(
+                regularize_activation, regularize_entropy)
+            for model in self.models
+            for layer in model.layers
+        ) + regularize_ridge * self.linear.weight.norm(p=2)

@@ -1,3 +1,10 @@
+from imodels.util.data_util import DSET_KWARGS
+import warnings
+import cache_save_utils
+import inspect
+from imodels import TreeGAMClassifier
+import imodels
+import joblib
 import argparse
 from copy import deepcopy
 import logging
@@ -13,13 +20,6 @@ from imodels.util.extract import extract_marginal_curves
 from sklearn.ensemble import BaggingClassifier
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-import joblib
-import imodels
-from imodels import TreeGAMClassifier
-import inspect
-import cache_save_utils
-import warnings
-from imodels.util.data_util import DSET_KWARGS
 
 
 # initialize args
@@ -125,7 +125,8 @@ if __name__ == "__main__":
     # get args
     parser = argparse.ArgumentParser()
     parser_without_computational_args = add_main_args(parser)
-    parser = add_computational_args(deepcopy(parser_without_computational_args))
+    parser = add_computational_args(
+        deepcopy(parser_without_computational_args))
     args = parser.parse_args()
 
     # Check arguments
@@ -172,12 +173,14 @@ if __name__ == "__main__":
         args=args, save_dir=save_dir_unique, fname="params.json", r=r
     )
 
-    X, y, feat_names = imodels.get_clean_dataset(**DSET_KWARGS[args.dataset_name])
+    X, y, feat_names = imodels.get_clean_dataset(
+        **DSET_KWARGS[args.dataset_name])
     X_train, X_test, y_train, y_test = train_test_split(
         X,
         y,
         test_size=0.2,
-        random_state=42,  # don't shuffle this for now, to make sure gam curves have same points (just being lazy)
+        # don't shuffle this for now, to make sure gam curves have same points (just being lazy)
+        random_state=42,
         stratify=y,
     )
 
@@ -207,9 +210,11 @@ if __name__ == "__main__":
         m.fit(X_train, y_train)
         r["val_score"] = -m.mse_val_
 
-    r["roc_auc_train"] = metrics.roc_auc_score(y_train, m.predict_proba(X_train)[:, 1])
+    r["roc_auc_train"] = metrics.roc_auc_score(
+        y_train, m.predict_proba(X_train)[:, 1])
     r["acc_train"] = metrics.accuracy_score(y_train, m.predict(X_train))
-    r["roc_auc_test"] = metrics.roc_auc_score(y_test, m.predict_proba(X_test)[:, 1])
+    r["roc_auc_test"] = metrics.roc_auc_score(
+        y_test, m.predict_proba(X_test)[:, 1])
     r["acc_test"] = metrics.accuracy_score(y_test, m.predict(X_test))
 
     feature_vals_list, shape_function_vals_list = extract_marginal_curves(
@@ -221,5 +226,5 @@ if __name__ == "__main__":
     joblib.dump(
         r, join(save_dir_unique, "results.pkl")
     )  # caching requires that this is called results.pkl
-    joblib.dump(m, join(save_dir_unique, "model.pkl"))
+    # joblib.dump(m, join(save_dir_unique, "model.pkl"))
     logging.info("Succesfully completed :)\n\n")
