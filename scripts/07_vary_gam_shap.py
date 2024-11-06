@@ -42,7 +42,7 @@ params_shared_dict = {
         pmlb.classification_dataset_names,
 
     "seed": [1],
-    "save_dir": [join(repo_dir, "results", "gam_shap_no_interactions_nov5_2")],
+    "save_dir": [join(repo_dir, "results", "gam_shap_no_interactions_nov6")],
     # 'train_frac': [0.1, 0.25, 0.5, 0.8],
     'train_frac': [0.8],
     "use_cache": [1],

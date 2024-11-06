@@ -171,7 +171,10 @@ def _get_model(args):
     if args.dataset_name in list(DSET_CLASSIFICATION_KWARGS.keys()) + list(DSET_CLASSIFICATION_MULTITASK_KWARGS.keys()) + pmlb.classification_dataset_names:
         if args.use_shap_gam:
             m = imodels.algebraic.gam_shap.ShapGAMClassifier(
-                n_estimators=10, feature_fraction=0.5, random_state=42, ebm_kwargs=ebm_kwargs)
+                n_estimators=30,
+                # feature_fraction=0.5,
+                feature_fraction='uniform',
+                random_state=42, ebm_kwargs=ebm_kwargs)
         else:
             m = ExplainableBoostingClassifier(**ebm_kwargs)
         # est = imodels.algebraic.gam_multitask.MultiTaskGAMClassifier(**kwargs)
