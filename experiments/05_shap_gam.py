@@ -24,7 +24,7 @@ from sklearn.preprocessing import StandardScaler
 import pmlb
 import imodels.algebraic.gam_shap
 from imodels.util.ensemble import ResidualBoostingRegressor, SimpleBaggingRegressor
-from interpret.glassbox import ExplainableBoostingClassifier
+from interpret.glassbox import ExplainableBoostingClassifier, ExplainableBoostingRegressor
 import pandas as pd
 
 path_to_repo = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -38,7 +38,10 @@ def add_main_args(parser):
 
     # dataset args ######################
     parser.add_argument(
-        "--dataset_name", type=str, default="heart", help="name of dataset"
+        "--dataset_name", type=str,
+        # default="heart",
+        default='bike_sharing',
+        help="name of dataset"
     )
     parser.add_argument(
         '--use_input_normalization', type=int, default=1, choices=[0, 1],
@@ -172,14 +175,20 @@ def _get_model(args):
         if args.use_shap_gam:
             m = imodels.algebraic.gam_shap.ShapGAMClassifier(
                 n_estimators=30,
-                # feature_fraction=0.5,
-                feature_fraction='uniform',
+                feature_fraction=0.5,
+                # feature_fraction='uniform',
                 random_state=42, ebm_kwargs=ebm_kwargs)
         else:
             m = ExplainableBoostingClassifier(**ebm_kwargs)
-        # est = imodels.algebraic.gam_multitask.MultiTaskGAMClassifier(**kwargs)
-    # elif args.dataset_name in list(DSET_REGRESSION_KWARGS.keys()) + pmlb.regression_dataset_names:
-        # est = imodels.algebraic.gam_multitask.MultiTaskGAMRegressor(**kwargs)
+    elif args.dataset_name in list(DSET_REGRESSION_KWARGS.keys()) + pmlb.regression_dataset_names:
+        if args.use_shap_gam:
+            m = imodels.algebraic.gam_shap.ShapGAMRegressor(
+                n_estimators=10,
+                feature_fraction=1,
+                # feature_fraction='uniform',
+                random_state=42, ebm_kwargs=ebm_kwargs)
+        else:
+            m = ExplainableBoostingRegressor(**ebm_kwargs)
     else:
         raise ValueError(f"dataset {args.dataset_name} not found")
     return m
@@ -273,7 +282,7 @@ if __name__ == "__main__":
                     for i in range(y_test.shape[1])]
             r['roc_auc_test'] = np.mean(rocs)
 
-        logging.info(r['acc_test'])
+        logging.error(r['acc_test'])
     elif problem_type == 'regression':
         r["r2_train"] = metrics.r2_score(y_train, m.predict(X_train))
         r["mse_train"] = metrics.mean_squared_error(
@@ -282,6 +291,8 @@ if __name__ == "__main__":
         r["r2_test"] = metrics.r2_score(y_test, m.predict(X_test))
         r["mse_test"] = metrics.mean_squared_error(y_test, m.predict(X_test))
         r['corr_test'] = np.corrcoef(y_test, m.predict(X_test))[0, 1]
+
+        logging.error(r['r2_test'])
 
     # save data stuff
     r['n_samples'] = X_train.shape[0]
