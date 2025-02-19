@@ -1,0 +1,87 @@
+name: In pull request
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  check_python_linting:
+    name: Ruff Linting & Formatting
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: chartboost/ruff-action@v1
+        with:
+          src: "./src ./tests"
+          version: 0.8.6
+      - uses: chartboost/ruff-action@v1
+        with:
+          src: "./src ./tests"
+          version: 0.8.6
+          args: 'format --check'
+
+  test_compatibility:
+    name: Test Package Compatibility
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python-version: "3.9"
+            dependency-set: minimum
+          - os: macos-13 # macos-latest doesn't work with python 3.10
+          # https://github.com/actions/setup-python/issues/855
+            python-version: "3.9"
+            dependency-set: minimum
+          - os: windows-latest
+            python-version: "3.9"
+            dependency-set: minimum
+          - os: ubuntu-latest
+            python-version: "3.12"
+            dependency-set: maximum
+          - os: macos-latest
+            python-version: "3.12"
+            dependency-set: maximum
+          - os: windows-latest
+            python-version: "3.12"
+            dependency-set: maximum
+    runs-on: ${{ matrix.os }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          architecture: x64
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+        with:
+          enable-cache: true
+
+      - name: Generate requirements file for minimum dependencies
+        if: matrix.dependency-set == 'minimum'
+        run: |
+          python scripts/get_min_dependencies.py
+
+      - name: Generate requirements file for maximum dependencies
+        if: matrix.dependency-set == 'maximum'
+        run: |
+          python scripts/get_max_dependencies.py
+
+      - name: Install dependencies
+        run: |
+          uv pip install --system --no-deps .
+          # onnx is required for onnx export tests
+          # we don't install all dev dependencies here for speed
+          uv pip install --system -r requirements.txt
+          uv pip install --system pytest onnx psutil
+
+      - name: Initialize submodules
+        run: git submodule update --init --recursive
+
+      - name: Run Tests
+        run: |
+          pytest tests/
