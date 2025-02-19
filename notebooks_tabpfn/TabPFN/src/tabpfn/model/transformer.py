@@ -84,7 +84,8 @@ class LayerStack(nn.Module):
             ).item()
 
         # n_exit = 3
-        for layer in self.layers[:n_layers]:
+        assert self.n_enc_layers >= 1 and self.n_enc_layers <= 12
+        for layer in self.layers[:self.n_enc_layers]:
             # for layer in self.layers[:n_exit]:
             if self.recompute_each_layer and x.requires_grad:
                 x = checkpoint(partial(layer, **kwargs), x,
@@ -92,7 +93,7 @@ class LayerStack(nn.Module):
             else:
                 x = layer(x, **kwargs)
 
-            print('[transformer LayerStack] x', x.shape)
+            # print('[transformer LayerStack] x', x.shape, self.n_enc_layers)
 
         return x
 
@@ -648,7 +649,7 @@ class PerFeatureTransformer(nn.Module):
             half_layers=half_layers,
             cache_trainset_representation=self.cache_trainset_representation,
         )  # b s f+1 e -> b s f+1 e
-        print('[transformer] encoder_out', encoder_out.shape)
+        # print('[transformer] encoder_out', encoder_out.shape)
 
         # If we are using a decoder
         if self.transformer_decoder:

@@ -225,6 +225,7 @@ class InferenceEngineCachePreprocessing(InferenceEngine):
     preprocessors: Sequence[SequentialFeatureTransformer]
     model: PerFeatureTransformer
     force_inference_dtype: torch.dtype | None
+    n_enc_layers: int
 
     @classmethod
     def prepare(
@@ -259,7 +260,7 @@ class InferenceEngineCachePreprocessing(InferenceEngine):
         Returns:
             The prepared inference engine.
         """
-        print('n_enc_layers!', n_enc_layers)
+        # print('n_enc_layers!', n_enc_layers)
         itr = fit_preprocessing(
             configs=ensemble_configs,
             X_train=X_train,
@@ -280,6 +281,7 @@ class InferenceEngineCachePreprocessing(InferenceEngine):
             dtype_byte_size=dtype_byte_size,
             force_inference_dtype=force_inference_dtype,
             save_peak_mem=save_peak_mem,
+            n_enc_layers=n_enc_layers,
         )
 
     @override
@@ -328,6 +330,7 @@ class InferenceEngineCachePreprocessing(InferenceEngine):
             )
 
             style = None
+            self.model.transformer_encoder.n_enc_layers = self.n_enc_layers
 
             with (
                 torch.autocast(device.type, enabled=autocast),
@@ -338,6 +341,7 @@ class InferenceEngineCachePreprocessing(InferenceEngine):
                     only_return_standard_out=only_return_standard_out,
                     categorical_inds=cat_ix,
                     single_eval_pos=len(y_train),
+                    # n_enc_layers=self.n_enc_layers,
                 )
 
             output = output if isinstance(output, dict) else output.squeeze(1)

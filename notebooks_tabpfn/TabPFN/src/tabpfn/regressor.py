@@ -503,7 +503,7 @@ class TabPFNRegressor(RegressorMixin, BaseEstimator):
         ).float()
 
         # Create the inference engine
-        print('[regressor] n_enc_layers', self.n_enc_layers)
+        # print('[regressor] n_enc_layers', self.n_enc_layers)
         self.executor_ = create_inference_engine(
             X_train=X,
             y_train=y,
